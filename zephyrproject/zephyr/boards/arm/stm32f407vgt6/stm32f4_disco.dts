@@ -1,0 +1,165 @@
+/*
+ * Copyright (c) 2017 Linaro Limited
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/f4/stm32f407Xg.dtsi>
+#include <st/f4/stm32f407v(e-g)tx-pinctrl.dtsi>
+
+/ {	
+	model = "STMicroelectronics STM32F4DISCOVERY board";
+	compatible = "st,stm32f4discovery";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,ccm = &ccm0;
+		zephyr,canbus = &can2;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		green_led_1: led_1 {
+			gpios = <&gpiod 9 GPIO_ACTIVE_HIGH>;
+			label = "User LD1";
+		};
+		red_led_2: led_2 {
+			gpios = <&gpiod 10 GPIO_ACTIVE_HIGH>;
+			label = "User LD2";
+		};
+	};
+	
+	spi_chip_select {
+		compatible = "gpio-keys";
+		spi_cs: cs {
+			/*PB9 as CS pin*/
+			gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
+			label = "SPI Chip Select";
+		};
+	};
+	
+	spi_activate_pin {
+		compatible = "gpio-keys";
+		spi_act_pin: act_pin {
+			/*PD15 as spi activate pin which is active high and by default is deactivated */
+			gpios = <&gpiod 15 GPIO_ACTIVE_LOW>;
+			label = "SPI Activate Pin";
+		};
+	};
+	
+	spi_2: spi_2 {
+		label = "SPI 2";
+		compatible = "zephyr,spi-bitbang";
+		status="okay";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clk-gpios = <&gpiob 10 GPIO_ACTIVE_HIGH>;
+		mosi-gpios = <&gpiob 15 GPIO_ACTIVE_HIGH>;
+		miso-gpios = <&gpiob 14 0>;
+		cs-gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
+	};	
+
+	gpio_keys {
+		compatible = "gpio-keys";
+		user_button: button {
+			label = "Key";
+			gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
+		};		
+	};
+
+	aliases {
+		led0 = &green_led_1;
+		led1 = &red_led_2;
+		sw0 = &user_button;
+		uart2 = &usart2;
+		cs = &spi_cs;
+		spiactpin = &spi_act_pin;
+		spi = &spi2;
+	};
+	
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pb6 &usart1_rx_pb7>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";	
+};
+
+&spi2 {
+	compatible = "st,stm32-spi";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi2_nss_pb9 &spi2_sck_pb10 &spi2_miso_pb14 &spi2_mosi_pb15 >;
+	cs-gpios = <&gpiob 9 GPIO_ACTIVE_LOW>;
+	status = "okay";
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(8)>;
+	status = "okay";
+};
+
+&pll {
+	div-m = <8>;
+	mul-n = <336>;
+	div-p = <2>;
+	div-q = <7>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(168)>;
+	ahb-prescaler = <1>;
+	apb1-prescaler = <4>;
+	apb2-prescaler = <2>;
+};
+
+&usart2 {
+	pinctrl-0 = <&usart2_tx_pd5 &usart2_rx_pd6>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+	gsm: gsm-modem {
+		compatible = "zephyr,gsm-ppp";
+	};
+};
+
+&timers2 {
+	status = "okay";
+
+	pwm2: pwm {
+		status = "okay";
+		pinctrl-0 = <&tim2_ch1_pa0>;
+		pinctrl-names = "default";
+	};
+};
+
+&rtc {
+	status = "okay";
+};
+
+zephyr_udc0: &usbotg_fs {
+	pinctrl-0 = <&usb_otg_fs_dm_pa11 &usb_otg_fs_dp_pa12>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&can1 {
+	pinctrl-0 = <&can1_rx_pb8 &can1_tx_pb9>;
+	pinctrl-names = "default";
+	bus-speed = <125000>;
+	status = "disabled";
+};
+
+&can2 {
+	pinctrl-0 = <&can2_rx_pb5 &can2_tx_pb13>;
+	pinctrl-names = "default";
+	bus-speed = <125000>;
+	status = "okay";
+};

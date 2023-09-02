@@ -1,0 +1,5 @@
+r
+loadbin /home/ariyataghizadeh/zephyrproject/zephyr/build/zephyr/zephyr.bin, 0x8000000
+verifybin /home/ariyataghizadeh/zephyrproject/zephyr/build/zephyr/zephyr.bin, 0x8000000
+rnh
+exit
